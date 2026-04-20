@@ -13,6 +13,12 @@
 		"scram"
 	],
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/kklimuk/bun-pg-listen.git"
+	},
+	"homepage": "https://github.com/kklimuk/bun-pg-listen#readme",
+	"bugs": "https://github.com/kklimuk/bun-pg-listen/issues",
 	"type": "module",
 	"exports": {
 		".": "./src/index.ts"
