@@ -58,24 +58,10 @@ jobs:
       - run: bun test tests/unit
 
   integration-tests:
-    name: Integration Tests (Postgres 18 + SCRAM)
+    name: Integration Tests (Postgres 18 + SCRAM + TLS)
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:18
-        env:
-          POSTGRES_USER: bun_pg_listen
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: bun_pg_listen_test
-          POSTGRES_HOST_AUTH_METHOD: scram-sha-256
-          POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
-        ports:
-          - 54329:5432
-        options: >-
-          --health-cmd "pg_isready -U bun_pg_listen -d bun_pg_listen_test"
-          --health-interval 2s
-          --health-timeout 5s
-          --health-retries 20
+    # Mirrors ci.yml — TLS tests need ssl=on + a self-signed cert which the
+    # `services.postgres` syntax can't provision, so we use docker-compose.
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -85,9 +71,15 @@ jobs:
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           restore-keys: bun-${{ runner.os }}-
       - run: bun install --frozen-lockfile
+      - run: bun run db:up
       - run: bun test tests/integration
         env:
           TEST_DATABASE_URL: "postgres://bun_pg_listen:test_password@localhost:54329/bun_pg_listen_test"
+      - name: Dump Postgres logs on failure
+        if: failure()
+        run: docker compose -f tests/docker-compose.yml logs
+      - if: always()
+        run: bun run db:down
 
   publish:
     name: Publish to npm
