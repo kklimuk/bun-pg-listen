@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: bun-pg-listen-test-pg
+    environment:
+      POSTGRES_USER: bun_pg_listen
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: bun_pg_listen_test
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    ports:
+      - "54329:5432"
+    # Generate a self-signed cert at startup (CN=localhost) before handing
+    # off to the normal postgres entrypoint. Enables `sslmode=require` and
+    # makes `sslmode=verify-full` fail with a cert-verification error — both
+    # of which the TLS integration tests depend on.
+    entrypoint:
+      - bash
+      - -c
+      - |
+        if [ ! -f /var/lib/postgresql/server.key ]; then
+          openssl req -new -x509 -days 365 -nodes \
+            -out /var/lib/postgresql/server.crt \
+            -keyout /var/lib/postgresql/server.key \
+            -subj "/CN=localhost"
+          chmod 600 /var/lib/postgresql/server.key
+          chown postgres:postgres /var/lib/postgresql/server.crt /var/lib/postgresql/server.key
+        fi
+        exec docker-entrypoint.sh "$@"
+      - --
+    command:
+      - postgres
+      - -c
+      - ssl=on
+      - -c
+      - ssl_cert_file=/var/lib/postgresql/server.crt
+      - -c
+      - ssl_key_file=/var/lib/postgresql/server.key
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bun_pg_listen -d bun_pg_listen_test"]
+      interval: 1s
+      timeout: 3s
+      retries: 30

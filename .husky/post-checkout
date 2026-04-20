@@ -1,0 +1,6 @@
+#!/bin/sh
+# Initialize husky hooks in this worktree if not already present.
+# Without this, core.hooksPath points to .husky/_/ which doesn't exist in worktrees.
+if [ ! -d .husky/_ ]; then
+  bunx husky 2>/dev/null || true
+fi

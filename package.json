@@ -1,0 +1,48 @@
+{
+	"name": "bun-pg-listen",
+	"version": "0.1.0",
+	"description": "Zero-dependency Postgres LISTEN/NOTIFY for Bun.",
+	"keywords": [
+		"bun",
+		"postgres",
+		"postgresql",
+		"listen",
+		"notify",
+		"pubsub",
+		"sasl",
+		"scram"
+	],
+	"license": "MIT",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"files": [
+		"src/**",
+		"README.md",
+		"LICENSE"
+	],
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
+	},
+	"engines": {
+		"bun": ">=1.2.0"
+	},
+	"scripts": {
+		"check": "biome check . && knip-bun && bunx tsc --noEmit",
+		"test": "bun test tests/unit",
+		"test:integration": "bun test tests/integration",
+		"test:all": "bun test",
+		"db:up": "docker compose -f tests/docker-compose.yml up -d --wait",
+		"db:down": "docker compose -f tests/docker-compose.yml down -v",
+		"prepare": "husky"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.10",
+		"@types/bun": "latest",
+		"husky": "^9.1.7",
+		"knip": "^6.3.0",
+		"typescript": "^6.0.2"
+	}
+}
