@@ -94,4 +94,7 @@ jobs:
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
-      - run: npm publish
+      # --ignore-scripts: we have no build step; `prepare: husky` would
+      # otherwise run here and fail because husky is a devDep that isn't
+      # installed in this job. All lifecycle scripts are dev-machine-only.
+      - run: npm publish --ignore-scripts
