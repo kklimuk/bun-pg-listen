@@ -87,10 +87,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Node 24 ships with npm 11.x which supports OIDC trusted publishing
+      # out of the box. Avoids fighting `npm install -g npm@latest` which
+      # intermittently corrupts its own dep tree mid-upgrade.
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24"
           registry-url: "https://registry.npmjs.org"
-      - name: Upgrade npm (trusted publishing requires >= 11.5.1)
-        run: npm install -g npm@latest
       - run: npm publish
